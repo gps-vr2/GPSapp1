@@ -13,11 +13,11 @@ function App() {
   const [activeTab, setActiveTab] = useState('available');
   const [selectedProperty, setSelectedProperty] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [layoutMode, setLayoutMode] = useState('both'); // 'map', 'list', 'both'
+  const [layoutMode, setLayoutMode] = useState('both');
 
   useEffect(() => {
     axios
-      .get('http://localhost:8000/api/properties')
+      .get('https://gpsapp1-production.up.railway.app/api/properties')
       .then((response) => {
         setProperties(response.data);
         setLoading(false);
@@ -64,29 +64,20 @@ function App() {
 
   const getTitle = () => {
     switch (activeTab) {
-      case 'available':
-        return 'Available Properties';
-      case 'partial':
-        return 'Partial Bookings';
-      case 'booked':
-        return 'Booked Properties';
-      case 'finish':
-        return 'Finished Properties';
-      case 'all':
-        return 'All Properties';
-      default:
-        return 'PropertyScope';
+      case 'available': return 'Available Properties';
+      case 'partial': return 'Partial Bookings';
+      case 'booked': return 'Booked Properties';
+      case 'finish': return 'Finished Properties';
+      case 'all': return 'All Properties';
+      default: return 'PropertyScope';
     }
   };
 
   return (
     <div className="h-screen flex flex-col bg-gray-50 font-sans">
-      <Header
-        title={getTitle()}
-        onRefresh={() => window.location.reload()}
-      />
+      <Header title={getTitle()} onRefresh={() => window.location.reload()} />
 
-      {/* Layout selector */}
+      {/* Layout toggle */}
       <div className="flex justify-end p-3 bg-white border-b">
         <select
           className="border rounded px-3 py-1 text-sm"
@@ -99,7 +90,7 @@ function App() {
         </select>
       </div>
 
-      {/* Layout rendering */}
+      {/* Layout */}
       <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
         {(layoutMode === 'map' || layoutMode === 'both') && (
           <div className={`w-full ${layoutMode === 'both' ? 'md:w-2/3' : 'w-full'} h-full`}>
@@ -125,18 +116,9 @@ function App() {
         )}
       </div>
 
-      {/* Footer tabs always visible */}
-      <TabNavigation
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-        counts={tabCounts}
-      />
+      <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} counts={tabCounts} />
 
-      {/* Property overlay */}
-      <PropertyCardOverlay
-        property={selectedProperty}
-        onClose={handleCloseOverlay}
-      />
+      <PropertyCardOverlay property={selectedProperty} onClose={handleCloseOverlay} />
     </div>
   );
 }
