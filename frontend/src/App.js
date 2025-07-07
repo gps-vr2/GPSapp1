@@ -3,7 +3,7 @@ import axios from 'axios';
 import { Header } from './components/Header';
 import { TabNavigation } from './components/TabNavigation';
 import { MapView } from './components/MapView';
-import { PropertyList } from './components/PropertyList';
+import PropertyList from './components/PropertyList'; 
 import { PropertyCardOverlay } from './components/PropertyCardOverlay';
 
 function App() {
@@ -28,14 +28,12 @@ function App() {
 
   const filteredProperties = useMemo(() => {
     if (activeTab === 'all') return properties;
-
     if (activeTab === 'available') {
       return properties.filter((p) => {
         const status = p.status?.toLowerCase();
         return status !== 'booked' && status !== 'partial' && status !== 'finish';
       });
     }
-
     return properties.filter((p) => p.status?.toLowerCase() === activeTab);
   }, [activeTab, properties]);
 
@@ -75,6 +73,7 @@ function App() {
     <div className="h-screen flex flex-col bg-gray-50 font-sans">
       <Header title={getTitle()} onRefresh={() => window.location.reload()} />
 
+      {/* Layout toggle */}
       <div className="flex justify-end p-3 bg-white border-b">
         <select
           className="border rounded px-3 py-1 text-sm"
@@ -87,9 +86,10 @@ function App() {
         </select>
       </div>
 
-      <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
+      {/* 🔀 Horizontal Split Layout */}
+      <div className="flex-1 flex flex-row overflow-hidden">
         {(layoutMode === 'map' || layoutMode === 'both') && (
-          <div className={`w-full ${layoutMode === 'both' ? 'md:w-2/3' : 'w-full'} h-full`}>
+          <div className={`${layoutMode === 'both' ? 'w-2/3' : 'w-full'} h-full z-10`}>
             <MapView
               properties={filteredProperties}
               onPropertySelect={handlePropertySelect}
@@ -98,7 +98,7 @@ function App() {
         )}
 
         {(layoutMode === 'list' || layoutMode === 'both') && (
-          <div className={`w-full ${layoutMode === 'both' ? 'md:w-1/3' : 'w-full'} overflow-y-auto border-t md:border-l border-gray-200 bg-white`}>
+          <div className={`${layoutMode === 'both' ? 'w-1/3' : 'w-full'} overflow-y-auto border-l border-gray-200 bg-white z-20`}>
             {loading ? (
               <p className="p-4 text-gray-500 text-sm italic">Loading properties...</p>
             ) : (
@@ -113,7 +113,14 @@ function App() {
       </div>
 
       <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} counts={tabCounts} />
-      <PropertyCardOverlay property={selectedProperty} onClose={handleCloseOverlay} />
+
+      {/* 🧾 Conditional Overlay Render */}
+      {selectedProperty && (
+        <PropertyCardOverlay
+          property={selectedProperty}
+          onClose={handleCloseOverlay}
+        />
+      )}
     </div>
   );
 }

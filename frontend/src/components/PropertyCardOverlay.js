@@ -1,45 +1,95 @@
-import React from 'react';
-import { X } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 
 export const PropertyCardOverlay = ({ property, onClose }) => {
-  if (!property) return null;
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [uploading, setUploading] = useState(false);
+  const [message, setMessage] = useState('');
+  const [uploadSlot, setUploadSlot] = useState('upload1'); // Default slot
+
+  // 🔍 Confirm the actual primary key ID
+  useEffect(() => {
+    if (property?.id) {
+      console.log('property.id (primary key):', property.id);
+    }
+    if (property?.id_cong) {
+      console.log('property.id_cong (legacy code):', property.id_cong);
+    }
+  }, [property]);
+
+  const handleFileChange = (e) => {
+    setSelectedFile(e.target.files[0]);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!property?.id || !uploadSlot || !selectedFile) {
+      setMessage('Missing file or property ID');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('file', selectedFile);
+
+    try {
+      setUploading(true);
+      const res = await axios.post(
+        `http://localhost:8000/api/properties/${property.id}/upload/${uploadSlot}`,
+        formData,
+        { headers: { 'Content-Type': 'multipart/form-data' } }
+      );
+      setMessage(`✅ Uploaded: ${res.data.filename}`);
+      setSelectedFile(null);
+    } catch (err) {
+      console.error('Upload failed:', err);
+      setMessage('❌ Upload failed');
+    } finally {
+      setUploading(false);
+    }
+  };
 
   return (
-    <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50 w-[95%] max-w-xl bg-white rounded-lg shadow-xl border border-gray-200 p-4">
-      <div className="flex justify-between items-start">
-        <div>
-          <span className={`text-xs px-2 py-1 rounded-full ${
-            property.status === 'booked' ? 'bg-red-100 text-red-700' :
-            property.status === 'partial' ? 'bg-yellow-100 text-yellow-700' :
-            'bg-green-100 text-green-700'
-          }`}>
-            {property.status === 'booked' ? 'Fully Booked' : property.status}
-          </span>
-          <h2 className="text-lg font-bold text-gray-800 mt-1">{property.code} {property.area && `– ${property.area}`}</h2>
-          <p className="text-sm text-gray-500 mb-2">
-            {property.coordinates?.lat?.toFixed(4)}, {property.coordinates?.lng?.toFixed(4)}
-          </p>
+    <div className="fixed inset-0 z-[9999] bg-black bg-opacity-50 flex items-center justify-center">
+      <div className="bg-white p-6 rounded shadow-lg w-80">
+        <h2 className="text-lg font-semibold mb-4">
+          Upload for {property?.code || 'Property'}
+        </h2>
 
-          <div className="text-sm text-gray-700 space-y-1">
-            {property.owner && (
-              <>
-                <p>Owner: <span className="font-medium">{property.owner.name}</span></p>
-                <p>Phone: <a href={`tel:${property.owner.phone}`} className="text-blue-600 underline">{property.owner.phone}</a></p>
-                <p>Email: <a href={`mailto:${property.owner.email}`} className="text-blue-600 underline">{property.owner.email}</a></p>
-              </>
-            )}
-            {property.address && <p>Address: {property.address}</p>}
-            {property.size && <p>Size: {property.size}</p>}
-            {property.rent && <p>Monthly Rent: ₹{property.rent}</p>}
-          </div>
-        </div>
+        <form onSubmit={handleSubmit} className="space-y-3">
+          <select
+            value={uploadSlot}
+            onChange={(e) => setUploadSlot(e.target.value)}
+            className="border p-1 w-full text-sm"
+          >
+            <option value="upload">Upload 0</option>
+            <option value="upload1">Upload 1</option>
+            <option value="upload2">Upload 2</option>
+            <option value="upload3">Upload 3</option>
+          </select>
+
+          <input
+            type="file"
+            onChange={handleFileChange}
+            className="block w-full border border-gray-300 text-sm p-1"
+          />
+
+          <button
+            type="submit"
+            disabled={uploading}
+            className="bg-blue-600 text-white text-sm px-4 py-1 rounded hover:bg-blue-700"
+          >
+            {uploading ? 'Uploading...' : 'Upload'}
+          </button>
+        </form>
+
+        {message && <p className="mt-2 text-sm text-gray-700">{message}</p>}
 
         <button
           onClick={onClose}
-          className="text-gray-400 hover:text-gray-600"
-          aria-label="Close"
+          className="mt-4 text-xs text-gray-500 underline hover:text-gray-700"
         >
-          <X size={20} />
+          Close
         </button>
       </div>
     </div>
