@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { PropertyCard } from './PropertyCard';
 import { PropertyCardOverlay } from './PropertyCardOverlay';
+import { BASE_URL } from '../config';
 
 const PropertyList = () => {
   const [properties, setProperties] = useState([]);
@@ -9,14 +10,13 @@ const PropertyList = () => {
   const [showOverlay, setShowOverlay] = useState(false);
 
   useEffect(() => {
-    fetch('http://localhost:8000/api/properties')
+    fetch(`${BASE_URL}/api/properties`)
       .then((res) => res.json())
       .then((data) => {
-        console.log('✅ Raw property list:', data);
         setProperties(data);
       })
       .catch((err) => {
-        console.error('❌ Failed to fetch properties:', err);
+        console.error('Error loading properties:', err);
       });
   }, []);
 
@@ -36,8 +36,6 @@ const PropertyList = () => {
     const { lat, lng } = property.coordinates || {};
     if (lat && lng) {
       window.open(`https://www.google.com/maps?q=${lat},${lng}`, '_blank');
-    } else {
-      alert('No coordinates available');
     }
   };
 

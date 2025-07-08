@@ -6,6 +6,9 @@ import { MapView } from './components/MapView';
 import PropertyList from './components/PropertyList'; 
 import { PropertyCardOverlay } from './components/PropertyCardOverlay';
 
+// ✅ Optional: dynamic base URL for easier switching
+const BASE_URL = import.meta.env.VITE_API_URL || '';
+
 function App() {
   const [properties, setProperties] = useState([]);
   const [activeTab, setActiveTab] = useState('available');
@@ -15,7 +18,7 @@ function App() {
 
   useEffect(() => {
     axios
-      .get('https://gpsapp1-backend.onrender.com/api/properties')
+      .get(`${BASE_URL}/api/properties`)
       .then((response) => {
         setProperties(response.data);
         setLoading(false);
@@ -73,7 +76,6 @@ function App() {
     <div className="h-screen flex flex-col bg-gray-50 font-sans">
       <Header title={getTitle()} onRefresh={() => window.location.reload()} />
 
-      {/* Layout toggle */}
       <div className="flex justify-end p-3 bg-white border-b">
         <select
           className="border rounded px-3 py-1 text-sm"
@@ -86,7 +88,6 @@ function App() {
         </select>
       </div>
 
-      {/* 🔀 Horizontal Split Layout */}
       <div className="flex-1 flex flex-row overflow-hidden">
         {(layoutMode === 'map' || layoutMode === 'both') && (
           <div className={`${layoutMode === 'both' ? 'w-2/3' : 'w-full'} h-full z-10`}>
@@ -114,7 +115,6 @@ function App() {
 
       <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} counts={tabCounts} />
 
-      {/* 🧾 Conditional Overlay Render */}
       {selectedProperty && (
         <PropertyCardOverlay
           property={selectedProperty}

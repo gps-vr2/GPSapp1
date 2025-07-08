@@ -5,9 +5,12 @@ const cors = require('cors');
 require('dotenv').config();
 
 const app = express();
+
+// Middleware
 app.use(cors());
 app.use(express.json());
 
+// ✅ MySQL connection pool
 const pool = mysql.createPool({
   host: process.env.DB_HOST,
   port: process.env.DB_PORT,
@@ -17,9 +20,13 @@ const pool = mysql.createPool({
   ssl: { rejectUnauthorized: false },
 });
 
+// ✅ Multer for memory-based file uploads
 const upload = multer({ storage: multer.memoryStorage() });
 
-// 📤 File Upload Route
+/** ------------------------------------------------------------------
+ * 📤 Upload Route
+ * Example: POST /api/properties/:id/upload/:slot
+ * ------------------------------------------------------------------ */
 app.post('/api/properties/:id/upload/:slot', upload.single('file'), async (req, res) => {
   const { id, slot } = req.params;
   const file = req.file;
@@ -50,16 +57,22 @@ app.post('/api/properties/:id/upload/:slot', upload.single('file'), async (req, 
   }
 });
 
-// 📥 Property List Route
+/** ------------------------------------------------------------------
+ * 📥 Properties List Route
+ * Example: GET /api/properties
+ * ------------------------------------------------------------------ */
 app.get('/api/properties', async (req, res) => {
   try {
     const [rows] = await pool.query('SELECT * FROM GPS_VR2_STRUCTURE');
 
     const formatted = rows.map((row) => {
-      const [latFallback, lngFallback] = (row.location || '').split(',').map(coord => parseFloat(coord.trim()));
+      const [latFallback, lngFallback] = (row.location || '')
+        .split(',')
+        .map(coord => parseFloat(coord.trim()));
+        
       return {
-        id: row.id,           // ✅ primary key
-        id_cong: row.id_cong, // optional legacy code
+        id: row.id,
+        id_cong: row.id_cong,
         code: row.Terri,
         status: row.Statut?.toLowerCase() || 'available',
         coordinates: {
@@ -73,7 +86,7 @@ app.get('/api/properties', async (req, res) => {
           phone: row.phone || '',
           email: row.email || '',
         },
-        statusTime: row.Statut_time
+        statusTime: row.Statut_time,
       };
     });
 
@@ -84,5 +97,5 @@ app.get('/api/properties', async (req, res) => {
   }
 });
 
-// ✅ Export for Vercel
+// ✅ Required export for Vercel serverless functions
 module.exports = app;
