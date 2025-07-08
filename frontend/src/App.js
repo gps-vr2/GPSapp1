@@ -5,9 +5,7 @@ import { TabNavigation } from './components/TabNavigation';
 import { MapView } from './components/MapView';
 import PropertyList from './components/PropertyList'; 
 import { PropertyCardOverlay } from './components/PropertyCardOverlay';
-
-// ✅ Optional: dynamic base URL for easier switching
-const BASE_URL = import.meta.env.VITE_API_URL || '';
+import { BASE_URL } from './config'; // ✅ Import added
 
 function App() {
   const [properties, setProperties] = useState([]);
@@ -34,7 +32,7 @@ function App() {
     if (activeTab === 'available') {
       return properties.filter((p) => {
         const status = p.status?.toLowerCase();
-        return status !== 'booked' && status !== 'partial' && status !== 'finish';
+        return !['booked', 'partial', 'finish'].includes(status);
       });
     }
     return properties.filter((p) => p.status?.toLowerCase() === activeTab);

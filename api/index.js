@@ -5,28 +5,25 @@ const cors = require('cors');
 require('dotenv').config();
 
 const app = express();
-
-// Middleware
 app.use(cors());
 app.use(express.json());
 
-// ✅ MySQL connection pool
+// ✅ Create MySQL connection pool using environment variables
 const pool = mysql.createPool({
   host: process.env.DB_HOST,
-  port: process.env.DB_PORT,
+  port: process.env.DB_PORT || 3306,
   user: process.env.DB_USER,
   password: process.env.DB_PASS,
   database: process.env.DB_NAME,
   ssl: { rejectUnauthorized: false },
 });
 
-// ✅ Multer for memory-based file uploads
+// ✅ Configure multer for memory-based file upload
 const upload = multer({ storage: multer.memoryStorage() });
 
-/** ------------------------------------------------------------------
- * 📤 Upload Route
- * Example: POST /api/properties/:id/upload/:slot
- * ------------------------------------------------------------------ */
+/** 📥 File Upload API
+ * POST /api/properties/:id/upload/:slot
+ */
 app.post('/api/properties/:id/upload/:slot', upload.single('file'), async (req, res) => {
   const { id, slot } = req.params;
   const file = req.file;
@@ -47,29 +44,28 @@ app.post('/api/properties/:id/upload/:slot', upload.single('file'), async (req, 
     );
 
     if (result.affectedRows === 0) {
-      return res.status(404).json({ error: 'Property ID not found' });
+      return res.status(404).json({ error: 'Property not found' });
     }
 
-    res.json({ message: 'File uploaded successfully', filename: file.originalname });
-  } catch (err) {
-    console.error('Upload error:', err);
+    res.json({ message: 'Upload successful', filename: file.originalname });
+  } catch (error) {
+    console.error('File upload error:', error);
     res.status(500).json({ error: 'Server error during upload' });
   }
 });
 
-/** ------------------------------------------------------------------
- * 📥 Properties List Route
- * Example: GET /api/properties
- * ------------------------------------------------------------------ */
+/** 📦 Property List API
+ * GET /api/properties
+ */
 app.get('/api/properties', async (req, res) => {
   try {
     const [rows] = await pool.query('SELECT * FROM GPS_VR2_STRUCTURE');
 
-    const formatted = rows.map((row) => {
+    const data = rows.map((row) => {
       const [latFallback, lngFallback] = (row.location || '')
         .split(',')
         .map(coord => parseFloat(coord.trim()));
-        
+
       return {
         id: row.id,
         id_cong: row.id_cong,
@@ -90,12 +86,12 @@ app.get('/api/properties', async (req, res) => {
       };
     });
 
-    res.json(formatted);
-  } catch (err) {
-    console.error('Data fetch error:', err);
+    res.json(data);
+  } catch (error) {
+    console.error('Property fetch error:', error);
     res.status(500).json({ error: 'Unable to load properties' });
   }
 });
 
-// ✅ Required export for Vercel serverless functions
+// ✅ Required for Vercel serverless deployment
 module.exports = app;
