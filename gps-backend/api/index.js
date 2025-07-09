@@ -9,7 +9,7 @@ const app = express();
 // ✅ Allow both local and deployed frontend origins
 const allowedOrigins = [
   'http://localhost:3000',
-  'https://gpsapp1.vercel.app/' // 🔁 Replace with your actual frontend domain
+  'https://gpsapp1.vercel.app' // 🔁 Replace with your actual frontend domain
 ];
 
 app.use(cors({
