@@ -1,24 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { PropertyCard } from './PropertyCard';
 import { PropertyCardOverlay } from './PropertyCardOverlay';
-import { BASE_URL } from '../config';
 
-const PropertyList = () => {
-  const [properties, setProperties] = useState([]);
+const PropertyList = ({ properties, onPropertySelect }) => {
   const [selectedProperty, setSelectedProperty] = useState(null);
   const [selectedSlot, setSelectedSlot] = useState('');
   const [showOverlay, setShowOverlay] = useState(false);
-
-  useEffect(() => {
-    fetch(`${BASE_URL}/api/properties`)
-      .then((res) => res.json())
-      .then((data) => {
-        setProperties(data);
-      })
-      .catch((err) => {
-        console.error('Error loading properties:', err);
-      });
-  }, []);
 
   const handleUploadClick = (property, slot) => {
     setSelectedProperty(property);

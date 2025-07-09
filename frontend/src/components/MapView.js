@@ -87,8 +87,8 @@ export const MapView = ({ properties, onPropertySelect }) => {
               className: '',
               html: `
                 <div class="w-10 h-10 ${getStatusColor(property.status)} rounded-full shadow-md
-                            flex items-center justify-center text-white font-bold text-sm">
-                  ${property.code.match(/\d+/)?.[0] || property.id}
+                            flex items-center justify-center text-white font-bold text-[10px] text-center leading-tight px-1">
+                  ${property.code || 'N/A'}
                 </div>
                 <div class="w-3 h-3 ${getStatusColor(property.status)} rotate-45 mt-[-6px] shadow-md mx-auto"></div>
               `,
