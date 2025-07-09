@@ -5,20 +5,32 @@ const cors = require('cors');
 require('dotenv').config();
 
 const app = express();
-app.use(cors());
+
+// ✅ Allow requests from your frontend domain
+app.use(cors({
+  origin: 'https://gpsapp1.vercel.app', // 🔁 Replace with your actual frontend URL
+  credentials: true
+}));
+
 app.use(express.json());
 
+// ✅ MySQL connection pool
 const pool = mysql.createPool({
   host: process.env.DB_HOST,
   port: process.env.DB_PORT || 3306,
   user: process.env.DB_USER,
   password: process.env.DB_PASS,
   database: process.env.DB_NAME,
-  ssl: { rejectUnauthorized: false },
+  ssl: { rejectUnauthorized: false }
 });
 
+// ✅ Multer for file uploads (in-memory)
 const upload = multer({ storage: multer.memoryStorage() });
 
+/**
+ * 📤 Upload file to a specific slot
+ * POST /api/properties/:id/upload/:slot
+ */
 app.post('/api/properties/:id/upload/:slot', upload.single('file'), async (req, res) => {
   const { id, slot } = req.params;
   const file = req.file;
@@ -44,11 +56,15 @@ app.post('/api/properties/:id/upload/:slot', upload.single('file'), async (req, 
 
     res.json({ message: 'Upload successful', filename: file.originalname });
   } catch (error) {
-    console.error('Upload error:', error);
+    console.error('❌ Upload error:', error);
     res.status(500).json({ error: 'Server error during upload' });
   }
 });
 
+/**
+ * 📦 Get all properties
+ * GET /api/properties
+ */
 app.get('/api/properties', async (req, res) => {
   try {
     const [rows] = await pool.query('SELECT * FROM GPS_VR2_STRUCTURE');
@@ -80,10 +96,18 @@ app.get('/api/properties', async (req, res) => {
 
     res.json(data);
   } catch (error) {
-    console.error('Property fetch error:', error);
+    console.error('❌ Property fetch error:', error);
     res.status(500).json({ error: 'Unable to load properties' });
   }
 });
 
-// ✅ Required for Vercel
+/**
+ * ✅ Health check route
+ * GET /api/health
+ */
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok' });
+});
+
+// ✅ Required for Vercel serverless deployment
 module.exports = app;
