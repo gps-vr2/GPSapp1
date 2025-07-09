@@ -3,9 +3,9 @@ import axios from 'axios';
 import { Header } from './components/Header';
 import { TabNavigation } from './components/TabNavigation';
 import { MapView } from './components/MapView';
-import PropertyList from './components/PropertyList'; 
+import PropertyList from './components/PropertyList';
 import { PropertyCardOverlay } from './components/PropertyCardOverlay';
-import { BASE_URL } from './config'; // ✅ Import added
+import { BASE_URL } from './config'; // ✅ Centralized backend URL
 
 function App() {
   const [properties, setProperties] = useState([]);
@@ -18,16 +18,24 @@ function App() {
     axios
       .get(`${BASE_URL}/api/properties`)
       .then((response) => {
-        setProperties(response.data);
+        const data = response.data;
+        if (Array.isArray(data)) {
+          setProperties(data);
+        } else {
+          console.error('Unexpected response format:', data);
+          setProperties([]);
+        }
         setLoading(false);
       })
       .catch((error) => {
         console.error('Error fetching properties:', error);
+        setProperties([]);
         setLoading(false);
       });
   }, []);
 
   const filteredProperties = useMemo(() => {
+    if (!Array.isArray(properties)) return [];
     if (activeTab === 'all') return properties;
     if (activeTab === 'available') {
       return properties.filter((p) => {

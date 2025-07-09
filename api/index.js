@@ -8,7 +8,6 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// ✅ Create MySQL connection pool using environment variables
 const pool = mysql.createPool({
   host: process.env.DB_HOST,
   port: process.env.DB_PORT || 3306,
@@ -18,12 +17,8 @@ const pool = mysql.createPool({
   ssl: { rejectUnauthorized: false },
 });
 
-// ✅ Configure multer for memory-based file upload
 const upload = multer({ storage: multer.memoryStorage() });
 
-/** 📥 File Upload API
- * POST /api/properties/:id/upload/:slot
- */
 app.post('/api/properties/:id/upload/:slot', upload.single('file'), async (req, res) => {
   const { id, slot } = req.params;
   const file = req.file;
@@ -49,14 +44,11 @@ app.post('/api/properties/:id/upload/:slot', upload.single('file'), async (req, 
 
     res.json({ message: 'Upload successful', filename: file.originalname });
   } catch (error) {
-    console.error('File upload error:', error);
+    console.error('Upload error:', error);
     res.status(500).json({ error: 'Server error during upload' });
   }
 });
 
-/** 📦 Property List API
- * GET /api/properties
- */
 app.get('/api/properties', async (req, res) => {
   try {
     const [rows] = await pool.query('SELECT * FROM GPS_VR2_STRUCTURE');
@@ -93,5 +85,5 @@ app.get('/api/properties', async (req, res) => {
   }
 });
 
-// ✅ Required for Vercel serverless deployment
+// ✅ Required for Vercel
 module.exports = app;
