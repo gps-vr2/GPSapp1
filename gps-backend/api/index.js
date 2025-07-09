@@ -6,9 +6,20 @@ require('dotenv').config();
 
 const app = express();
 
-// ✅ Allow requests from your frontend domain
+// ✅ Allow both local and deployed frontend origins
+const allowedOrigins = [
+  'http://localhost:3000',
+  'https://gps-frontend.vercel.app' // 🔁 Replace with your actual frontend domain
+];
+
 app.use(cors({
-  origin: 'https://gps-frontend.vercel.app', // 🔁 Replace with your actual frontend URL
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true
 }));
 
@@ -19,7 +30,7 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok' });
 });
 
-// ✅ MySQL connection pool (safe)
+// ✅ MySQL connection pool
 let pool;
 try {
   pool = mysql.createPool({
