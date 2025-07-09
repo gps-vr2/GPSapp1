@@ -8,23 +8,33 @@ const app = express();
 
 // ✅ Allow requests from your frontend domain
 app.use(cors({
-  origin: 'https://gpsapp1.vercel.app', // 🔁 Replace with your actual frontend URL
+  origin: 'https://gps-frontend.vercel.app', // 🔁 Replace with your actual frontend URL
   credentials: true
 }));
 
 app.use(express.json());
 
-// ✅ MySQL connection pool
-const pool = mysql.createPool({
-  host: process.env.DB_HOST,
-  port: process.env.DB_PORT || 3306,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASS,
-  database: process.env.DB_NAME,
-  ssl: { rejectUnauthorized: false }
+// ✅ Health check route
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok' });
 });
 
-// ✅ Multer for file uploads (in-memory)
+// ✅ MySQL connection pool (safe)
+let pool;
+try {
+  pool = mysql.createPool({
+    host: process.env.DB_HOST,
+    port: process.env.DB_PORT || 3306,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASS,
+    database: process.env.DB_NAME,
+    ssl: { rejectUnauthorized: false }
+  });
+} catch (err) {
+  console.error('❌ Failed to create MySQL pool:', err);
+}
+
+// ✅ Multer for file uploads
 const upload = multer({ storage: multer.memoryStorage() });
 
 /**
@@ -101,13 +111,5 @@ app.get('/api/properties', async (req, res) => {
   }
 });
 
-/**
- * ✅ Health check route
- * GET /api/health
- */
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok' });
-});
-
-// ✅ Required for Vercel serverless deployment
+// ✅ Required for Vercel
 module.exports = app;
