@@ -18,13 +18,13 @@ function App() {
 
   useEffect(() => {
     axios.get(`${BASE_URL}/api/properties`)
-      .then((response) => {
-        const data = response.data;
+      .then(res => {
+        const data = res.data;
         setProperties(Array.isArray(data) ? data : []);
         setLoading(false);
       })
-      .catch((error) => {
-        console.error('Error fetching properties:', error);
+      .catch(err => {
+        console.error('Error fetching properties:', err);
         setProperties([]);
         setLoading(false);
       });
@@ -33,39 +33,29 @@ function App() {
   const filteredProperties = useMemo(() => {
     if (activeTab === 'all') return properties;
     if (activeTab === 'available') {
-      return properties.filter((p) =>
+      return properties.filter(p =>
         !['booked', 'partial', 'finish'].includes(p.status?.toLowerCase())
       );
     }
-    return properties.filter((p) => p.status?.toLowerCase() === activeTab);
+    return properties.filter(p => p.status?.toLowerCase() === activeTab);
   }, [activeTab, properties]);
 
   const tabCounts = useMemo(() => {
-    const getStatus = (s) => s?.toLowerCase();
+    const getStatus = s => s?.toLowerCase();
     return {
-      available: properties.filter((p) =>
-        !['booked', 'partial', 'finish'].includes(getStatus(p.status))
-      ).length,
-      booked: properties.filter((p) => getStatus(p.status) === 'booked').length,
-      partial: properties.filter((p) => getStatus(p.status) === 'partial').length,
-      finish: properties.filter((p) => getStatus(p.status) === 'finish').length,
+      available: properties.filter(p => !['booked', 'partial', 'finish'].includes(getStatus(p.status))).length,
+      booked: properties.filter(p => getStatus(p.status) === 'booked').length,
+      partial: properties.filter(p => getStatus(p.status) === 'partial').length,
+      finish: properties.filter(p => getStatus(p.status) === 'finish').length,
       all: properties.length,
     };
   }, [properties]);
 
-  const handlePropertySelect = (property) => {
-    setSelectedProperty(property);
-  };
-
-  const handleCloseOverlay = () => {
-    setSelectedProperty(null);
-  };
-
   const getTitle = () => {
     switch (activeTab) {
       case 'available': return 'Available Properties';
-      case 'partial': return 'Partial Bookings';
       case 'booked': return 'Booked Properties';
+      case 'partial': return 'Partial Bookings';
       case 'finish': return 'Finished Properties';
       case 'all': return 'All Properties';
       default: return 'PropertyScope';
@@ -91,46 +81,67 @@ function App() {
       {/* ✅ Responsive layout */}
       {isMobile ? (
         <div className="flex flex-col flex-1 overflow-hidden">
-          {(layoutMode === 'map' || layoutMode === 'both') && (
-            <div className="w-full h-[50vh]">
+          {layoutMode === 'map' && (
+            <div className="flex flex-col w-full flex-1">
               <MapView
                 properties={filteredProperties}
-                onPropertySelect={handlePropertySelect}
+                onPropertySelect={setSelectedProperty}
               />
             </div>
           )}
-          {(layoutMode === 'list' || layoutMode === 'both') && (
-            <div className="w-full overflow-y-auto border-t border-gray-200 bg-white z-20">
+          {layoutMode === 'list' && (
+            <div className="w-full overflow-y-auto flex-1 border-t border-gray-200 bg-white">
               {loading ? (
                 <p className="p-4 text-gray-500 text-sm italic">Loading properties...</p>
               ) : (
                 <PropertyList
                   properties={filteredProperties}
-                  onPropertySelect={handlePropertySelect}
+                  onPropertySelect={setSelectedProperty}
                   title={getTitle()}
                 />
               )}
             </div>
           )}
+          {layoutMode === 'both' && (
+            <>
+              <div className="w-full h-[50vh]">
+                <MapView
+                  properties={filteredProperties}
+                  onPropertySelect={setSelectedProperty}
+                />
+              </div>
+              <div className="w-full overflow-y-auto flex-1 border-t border-gray-200 bg-white">
+                {loading ? (
+                  <p className="p-4 text-gray-500 text-sm italic">Loading properties...</p>
+                ) : (
+                  <PropertyList
+                    properties={filteredProperties}
+                    onPropertySelect={setSelectedProperty}
+                    title={getTitle()}
+                  />
+                )}
+              </div>
+            </>
+          )}
         </div>
       ) : (
         <div className="flex flex-row flex-1 overflow-hidden">
           {(layoutMode === 'map' || layoutMode === 'both') && (
-            <div className={`${layoutMode === 'both' ? 'w-2/3' : 'w-full'} h-full z-10`}>
+            <div className={`${layoutMode === 'both' ? 'w-2/3' : 'w-full'} h-full`}>
               <MapView
                 properties={filteredProperties}
-                onPropertySelect={handlePropertySelect}
+                onPropertySelect={setSelectedProperty}
               />
             </div>
           )}
           {(layoutMode === 'list' || layoutMode === 'both') && (
-            <div className={`${layoutMode === 'both' ? 'w-1/3' : 'w-full'} overflow-y-auto border-l border-gray-200 bg-white z-20`}>
+            <div className={`${layoutMode === 'both' ? 'w-1/3' : 'w-full'} overflow-y-auto border-l border-gray-200 bg-white`}>
               {loading ? (
                 <p className="p-4 text-gray-500 text-sm italic">Loading properties...</p>
               ) : (
                 <PropertyList
                   properties={filteredProperties}
-                  onPropertySelect={handlePropertySelect}
+                  onPropertySelect={setSelectedProperty}
                   title={getTitle()}
                 />
               )}
@@ -148,7 +159,7 @@ function App() {
       {selectedProperty && (
         <PropertyCardOverlay
           property={selectedProperty}
-          onClose={handleCloseOverlay}
+          onClose={() => setSelectedProperty(null)}
         />
       )}
     </div>
