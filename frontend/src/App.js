@@ -1,13 +1,15 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
 import { Header } from './components/Header';
-import { TabNavigation } from './components/TabNavigation';
+import TabNavigation from './components/TabNavigation';
 import { MapView } from './components/MapView';
 import PropertyList from './components/PropertyList';
 import { PropertyCardOverlay } from './components/PropertyCardOverlay';
-import { BASE_URL } from './config'; // ✅ Centralized backend URL
+import { BASE_URL } from './config';
+import { useIsMobile } from './hooks/useIsMobile';
 
 function App() {
+  const isMobile = useIsMobile();
   const [properties, setProperties] = useState([]);
   const [activeTab, setActiveTab] = useState('available');
   const [selectedProperty, setSelectedProperty] = useState(null);
@@ -15,16 +17,10 @@ function App() {
   const [layoutMode, setLayoutMode] = useState('both');
 
   useEffect(() => {
-    axios
-      .get(`${BASE_URL}/api/properties`)
+    axios.get(`${BASE_URL}/api/properties`)
       .then((response) => {
         const data = response.data;
-        if (Array.isArray(data)) {
-          setProperties(data);
-        } else {
-          console.error('Unexpected response format:', data);
-          setProperties([]);
-        }
+        setProperties(Array.isArray(data) ? data : []);
         setLoading(false);
       })
       .catch((error) => {
@@ -35,13 +31,11 @@ function App() {
   }, []);
 
   const filteredProperties = useMemo(() => {
-    if (!Array.isArray(properties)) return [];
     if (activeTab === 'all') return properties;
     if (activeTab === 'available') {
-      return properties.filter((p) => {
-        const status = p.status?.toLowerCase();
-        return !['booked', 'partial', 'finish'].includes(status);
-      });
+      return properties.filter((p) =>
+        !['booked', 'partial', 'finish'].includes(p.status?.toLowerCase())
+      );
     }
     return properties.filter((p) => p.status?.toLowerCase() === activeTab);
   }, [activeTab, properties]);
@@ -94,32 +88,62 @@ function App() {
         </select>
       </div>
 
-      <div className="flex-1 flex flex-row overflow-hidden">
-        {(layoutMode === 'map' || layoutMode === 'both') && (
-          <div className={`${layoutMode === 'both' ? 'w-2/3' : 'w-full'} h-full z-10`}>
-            <MapView
-              properties={filteredProperties}
-              onPropertySelect={handlePropertySelect}
-            />
-          </div>
-        )}
-
-        {(layoutMode === 'list' || layoutMode === 'both') && (
-          <div className={`${layoutMode === 'both' ? 'w-1/3' : 'w-full'} overflow-y-auto border-l border-gray-200 bg-white z-20`}>
-            {loading ? (
-              <p className="p-4 text-gray-500 text-sm italic">Loading properties...</p>
-            ) : (
-              <PropertyList
+      {/* ✅ Responsive layout */}
+      {isMobile ? (
+        <div className="flex flex-col flex-1 overflow-hidden">
+          {(layoutMode === 'map' || layoutMode === 'both') && (
+            <div className="w-full h-[50vh]">
+              <MapView
                 properties={filteredProperties}
                 onPropertySelect={handlePropertySelect}
-                title={getTitle()}
               />
-            )}
-          </div>
-        )}
-      </div>
+            </div>
+          )}
+          {(layoutMode === 'list' || layoutMode === 'both') && (
+            <div className="w-full overflow-y-auto border-t border-gray-200 bg-white z-20">
+              {loading ? (
+                <p className="p-4 text-gray-500 text-sm italic">Loading properties...</p>
+              ) : (
+                <PropertyList
+                  properties={filteredProperties}
+                  onPropertySelect={handlePropertySelect}
+                  title={getTitle()}
+                />
+              )}
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="flex flex-row flex-1 overflow-hidden">
+          {(layoutMode === 'map' || layoutMode === 'both') && (
+            <div className={`${layoutMode === 'both' ? 'w-2/3' : 'w-full'} h-full z-10`}>
+              <MapView
+                properties={filteredProperties}
+                onPropertySelect={handlePropertySelect}
+              />
+            </div>
+          )}
+          {(layoutMode === 'list' || layoutMode === 'both') && (
+            <div className={`${layoutMode === 'both' ? 'w-1/3' : 'w-full'} overflow-y-auto border-l border-gray-200 bg-white z-20`}>
+              {loading ? (
+                <p className="p-4 text-gray-500 text-sm italic">Loading properties...</p>
+              ) : (
+                <PropertyList
+                  properties={filteredProperties}
+                  onPropertySelect={handlePropertySelect}
+                  title={getTitle()}
+                />
+              )}
+            </div>
+          )}
+        </div>
+      )}
 
-      <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} counts={tabCounts} />
+      <TabNavigation
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        counts={tabCounts}
+      />
 
       {selectedProperty && (
         <PropertyCardOverlay
