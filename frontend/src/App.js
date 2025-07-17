@@ -66,7 +66,16 @@ function App() {
     <div className="h-screen flex flex-col bg-gray-50 font-sans">
       <Header title={getTitle()} onRefresh={() => window.location.reload()} />
 
-      <div className="flex justify-end p-3 bg-white border-b">
+      {/* 🔘 Top bar with tabs and layout selector */}
+      <div className="flex flex-wrap md:flex-nowrap items-center justify-between px-3 py-2 bg-white border-b gap-3">
+        <div className="flex flex-wrap gap-2 text-xs md:text-base">
+          <TabNavigation
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+            counts={tabCounts}
+          />
+        </div>
+
         <select
           className="border rounded px-3 py-1 text-sm"
           value={layoutMode}
@@ -150,12 +159,7 @@ function App() {
         </div>
       )}
 
-      <TabNavigation
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-        counts={tabCounts}
-      />
-
+      {/* 📋 Property overlay if selected */}
       {selectedProperty && (
         <PropertyCardOverlay
           property={selectedProperty}

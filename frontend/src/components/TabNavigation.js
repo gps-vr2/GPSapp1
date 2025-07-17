@@ -22,6 +22,7 @@ const TabNavigation = ({ activeTab, onTabChange, counts }) => {
           onClick={() => onTabChange(tab.key)}
         >
           {tab.label} ({counts[tab.key]})
+          
         </div>
       ))}
     </div>
