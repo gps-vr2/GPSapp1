@@ -101,7 +101,7 @@ function App() {
           {layoutMode === 'list' && (
             <div className="w-full overflow-y-auto flex-1 border-t border-gray-200 bg-white">
               {loading ? (
-                <p className="p-4 text-gray-500 text-sm italic">Loading properties...</p>
+                <p className="p-4 text-gray-500 text-sm italic">Loading properties....</p>
               ) : (
                 <PropertyList
                   properties={filteredProperties}
