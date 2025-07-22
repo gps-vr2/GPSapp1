@@ -3,8 +3,8 @@ import axios from 'axios';
 import { Header } from './components/Header';
 import TabNavigation from './components/TabNavigation';
 import { MapView } from './components/MapView';
-import PropertyList from './components/PropertyList';
-import { PropertyCardOverlay } from './components/PropertyCardOverlay';
+import PropertyList from './components/PropertyList'; // ✅ default export
+import { PropertyCard } from './components/PropertyCard'; // ✅ named export
 import { BASE_URL } from './config';
 import { useIsMobile } from './hooks/useIsMobile';
 
@@ -18,12 +18,12 @@ function App() {
 
   useEffect(() => {
     axios.get(`${BASE_URL}/api/properties`)
-      .then(res => {
+      .then((res) => {
         const data = res.data;
         setProperties(Array.isArray(data) ? data : []);
         setLoading(false);
       })
-      .catch(err => {
+      .catch((err) => {
         console.error('Error fetching properties:', err);
         setProperties([]);
         setLoading(false);
@@ -62,11 +62,21 @@ function App() {
     }
   };
 
+  const handleUpload = (property, slot) => {
+    console.log(`Uploading ${slot} for ${property.code}`);
+    // Upload logic
+  };
+
+  const handleNavigate = (property) => {
+    console.log(`Navigating to ${property.location}`);
+    // Navigation logic
+  };
+
   return (
     <div className="h-screen flex flex-col bg-gray-50 font-sans">
       <Header title={getTitle()} onRefresh={() => window.location.reload()} />
 
-      {/* 🔘 Top bar with tabs and layout selector */}
+      {/* 🔘 Tabs + Layout selector */}
       <div className="flex flex-wrap md:flex-nowrap items-center justify-between px-3 py-2 bg-white border-b gap-3">
         <div className="flex flex-wrap gap-2 text-xs md:text-base">
           <TabNavigation
@@ -87,7 +97,7 @@ function App() {
         </select>
       </div>
 
-      {/* ✅ Responsive layout */}
+      {/* 📍 Responsive Content */}
       {isMobile ? (
         <div className="flex flex-col flex-1 overflow-hidden">
           {layoutMode === 'map' && (
@@ -101,7 +111,7 @@ function App() {
           {layoutMode === 'list' && (
             <div className="w-full overflow-y-auto flex-1 border-t border-gray-200 bg-white">
               {loading ? (
-                <p className="p-4 text-gray-500 text-sm italic">Loading properties....</p>
+                <p className="p-4 text-gray-500 text-sm italic">Loading properties...</p>
               ) : (
                 <PropertyList
                   properties={filteredProperties}
@@ -159,12 +169,16 @@ function App() {
         </div>
       )}
 
-      {/* 📋 Property overlay if selected */}
+      {/* 🧭 Popup Card from map marker */}
       {selectedProperty && (
-        <PropertyCardOverlay
-          property={selectedProperty}
-          onClose={() => setSelectedProperty(null)}
-        />
+        <div className="fixed bottom-4 left-4 right-4 z-[999] max-w-xl mx-auto">
+          <PropertyCard
+            property={selectedProperty}
+            onUpload={handleUpload}
+            onNavigate={handleNavigate}
+            onClose={() => setSelectedProperty(null)} // ✅ Close on "X"
+          />
+        </div>
       )}
     </div>
   );
