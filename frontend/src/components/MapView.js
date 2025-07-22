@@ -3,7 +3,6 @@ import {
   MapContainer,
   TileLayer,
   Marker,
-  Popup,
   useMapEvents
 } from 'react-leaflet';
 import L from 'leaflet';
@@ -95,12 +94,7 @@ export const MapView = ({ properties, onPropertySelect }) => {
               iconSize: [40, 48],
               iconAnchor: [20, 40]
             })}
-          >
-            <Popup>
-              <strong>{property.code}</strong><br />
-              {property.area}
-            </Popup>
-          </Marker>
+          />
         ))}
       </MapContainer>
 
