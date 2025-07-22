@@ -1,4 +1,12 @@
 import React from 'react';
+import { MdEmojiTransportation } from "react-icons/md";
+import { BsBookmarkDash } from "react-icons/bs";
+import { BsBookmarkXFill } from "react-icons/bs";
+import { BsBookmarkStar } from "react-icons/bs";
+
+
+// ⬇️ Add your emoji-style icons here
+// Example: import { MdEmojiTransportation, MdCancel, MdCheckCircle, MdTune } from "react-icons/md";
 
 export const PropertyCard = ({ property, onUpload, onNavigate }) => {
   const handleUpload = (slot) => {
@@ -23,31 +31,38 @@ export const PropertyCard = ({ property, onUpload, onNavigate }) => {
         <p><strong>Description:</strong> {property.description || '—'}</p>
       </div>
 
-      {/* ✅ Action Buttons only — No status or file names shown */}
+      {/* ✅ Action Buttons with emoji slots */}
       <div className="mt-5 flex flex-wrap gap-2">
         <button
           onClick={() => handleUpload('upload1')}
-          className="bg-red-600 text-white px-4 py-1 text-sm rounded hover:bg-red-700"
+          className="flex items-center gap-2 bg-red-600 text-white px-4 py-1 text-sm rounded hover:bg-red-700"
         >
-          Unbook
+          {<BsBookmarkDash />}
+          
         </button>
+
         <button
           onClick={() => handleUpload('upload2')}
-          className="bg-yellow-500 text-white px-4 py-1 text-sm rounded hover:bg-yellow-600"
+          className="flex items-center gap-2 bg-yellow-500 text-white px-4 py-1 text-sm rounded hover:bg-yellow-600"
         >
-          Partial
+          {<BsBookmarkStar />}
+         
         </button>
+
         <button
           onClick={() => handleUpload('upload3')}
-          className="bg-green-600 text-white px-4 py-1 text-sm rounded hover:bg-green-700"
+          className="flex items-center gap-2 bg-green-600 text-white px-4 py-1 text-sm rounded hover:bg-green-700"
         >
-          Finish
+          {<BsBookmarkXFill />}
+        
         </button>
+
         <button
           onClick={() => onNavigate(property)}
-          className="ml-auto bg-gray-800 text-white px-4 py-1 text-sm rounded hover:bg-gray-900"
+          className="flex items-center gap-2 ml-auto bg-gray-800 text-white px-4 py-1 text-sm rounded hover:bg-gray-900"
         >
-          Navigate
+          {<MdEmojiTransportation />}
+         
         </button>
       </div>
     </div>
