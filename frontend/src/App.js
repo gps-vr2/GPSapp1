@@ -171,13 +171,15 @@ function App() {
 
       {/* 🧭 Popup Card from map marker */}
       {selectedProperty && (
-        <div className="fixed bottom-4 left-4 right-4 z-[999] max-w-xl mx-auto">
-          <PropertyCard
-            property={selectedProperty}
-            onUpload={handleUpload}
-            onNavigate={handleNavigate}
-            onClose={() => setSelectedProperty(null)} // ✅ Close on "X"
-          />
+        <div className="fixed inset-0 flex items-end justify-center pointer-events-none z-[9999]">
+          <div className="pointer-events-auto w-full max-w-xl mb-6 px-4">
+            <PropertyCard
+              property={selectedProperty}
+              onUpload={handleUpload}
+              onNavigate={handleNavigate}
+              onClose={() => setSelectedProperty(null)}
+            />
+          </div>
         </div>
       )}
     </div>
